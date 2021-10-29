@@ -1,4 +1,6 @@
 #models.py
+
+
 from django.db import models
 
 class IRCurve(models.Model):
