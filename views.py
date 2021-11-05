@@ -2,7 +2,15 @@ from django.shortcuts import render
 
 from plotly.offline import plot
 import plotly.graph_objs as go
+
+import dash_core_components as dcc
+import dash_html_components as html
+
+from django_plotly_dash import DjangoDash
+#from dash import dcc, html
+
 import plotly.express as px
+
 import QuantLib as ql
 
 
@@ -34,7 +42,7 @@ def index(request):
     y_data = []
     for x in x_data:
         a.setValue(x)
-        y = float(europeanOption.gamma())
+        y = float(europeanOption.gamma())*1000000
         y_data.append(y)
         
     data1 = go.Scatter(x=x_data, y=y_data, mode='lines', name=f'Strike={str(strike)}', opacity=0.8, marker_color='green')
@@ -45,10 +53,26 @@ def index(request):
     y_data2 = []
     for x in x_data:
         a.setValue(x)
-        y = float(europeanOption.gamma())
+        y = float(europeanOption.gamma())*1000000
         y_data2.append(y)
     data2 = go.Scatter(x=x_data, y=y_data2, mode='lines', name=f'Strike={str(110)}', opacity=0.8, marker_color='red')
-        
-    plot_div = plot([data1, data2], output_type='div')
     
-    return render(request, "index.html", context={'plot_div': plot_div})
+       
+    #------------------------------
+    dataPx = px.scatter(x=x_data, y=y_data)
+    dataPx2 = px.scatter(x=x_data, y=y_data2)
+    app = DjangoDash('gamma_curve')
+    #app = dash.Dash()
+    app.layout = html.Div([ html.H1(children='Gamma Plot', style={'textAlign':'center'}), 
+            dcc.Graph(id="gamma_graph_id", figure=dataPx), 
+            html.Table([html.Thead(html.Tr([html.Th("A"), html.Th("B"), html.Th("C")]))], id="gamma_table",
+                style = {"border" : "1px solid black", "width" : "100%"})
+            ], 
+        className = "gamma_plot", 
+        style = { "width" : "50%" }
+        )
+        
+    #plot_div = plot([data1, data2], output_type='div')
+    
+    #return render(request, "index.html", context={'plot_div': plot_div})
+    return render(request, "myplotly/index.html")
